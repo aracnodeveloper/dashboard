@@ -5,17 +5,21 @@ import { RiSearch2Line, RiArrowUpDownLine } from '@remixicon/react';
 import { Select, SelectItem } from '@tremor/react';
 import { Button, Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } from '@tremor/react';
 import { DateRangePicker, DonutChart, Legend } from '@tremor/react'
+import ReactEcharts from 'echarts-for-react';
+import BarChartReservas from './barChartReservas';
 
 const GraficaReservas = () => {
     const [chartdata, setChardata] = useState()
     const [tableData, setTableData] = useState()
     const [ordenKeys, setOrdenKeys] = useState()
     const [chartCategorias, setCharCategorias] = useState();
+    const [option, setOption] =useState();
+    const [chartFechas, setChartFechas] = useState();
     const colores= ['lime', 'indigo', 'orange','cyan', 'fuchsia','blue'];
     const [valueGroup, setValueGroup] = useState("d");
     const [valueRange, setValueRange] = useState({
-        from: new Date((new Date).getTime() - (7 * 24 * 60 * 60 * 1000)),
-        to: new Date()
+        from: new Date((new Date).getTime() - (7 * 24 * 60 * 60 * 1000)),// new Date("2024-05-01"),
+        to:new Date()  //new Date("2024-05-03") 
     });
     const [msgRange, setMsgRange] = useState("");
     const [msgGroup, setMsgGroup] = useState("");
@@ -37,6 +41,7 @@ const GraficaReservas = () => {
     }
 
     const HandleChangeUnidad=(event)=>{
+        console.log(event);
         setUnidad(event);
         //fetchData(valueRange.from, valueRange.to, "reservas", valueGroup,mostrar,event);
         //console.log(event);
@@ -47,23 +52,15 @@ const GraficaReservas = () => {
         //fetchData(valueRange.from, valueRange.to, "reservas", valueGroup,event,unidad);
     }
 
-    const fetchData = (inicio, fin, tipo, grupo,mostrar) => {
-        repReservaController(inicio, fin, tipo, grupo,mostrar,unidad).then((result) => {
+    const fetchData = (inicio, fin) => {
+        console.log("Unida ", unidad)
+        repReservaController(inicio, fin, mostrar,valueGroup,unidad).then((result) => {
             if (result) {
+                console.log(result);
+                console.log("datooos");
                 console.log(result.datos)
-                setChardata(result.datos);
-                setTableData(result.datos);
-                setCharCategorias(result.categorias);
-                setTotales(result.totales);
-                console.log(result.totales)
-                var estados = {};
-                estados["dateUnformat"] = false;
-                result.categorias.map((item) => {
-                    estados[item] = false;
-                })
-                setOrdenKeys(estados)
-                setMaximo(result.maximo);
-                //console.log("M{aximo: "+result.maximo)
+                setChardata(result.datos); 
+                setCharCategorias(result.categorias); 
             }
         })
     }
@@ -72,17 +69,19 @@ const GraficaReservas = () => {
         if (primerEjecucion) {
             console.log("primera vez reservas" + (new Date()).toString())
             //console.log("most: "+mostrar);
-            fetchData(valueRange.from, valueRange.to, "reservas", valueGroup,mostrar);
+            fetchData(valueRange.from, valueRange.to);
             setPrimerEjecucion(false); // Marca la primera ejecución como completada
         }
 
         const intervalId = setInterval(() => {
             console.log("programado reservas" + (new Date()).toString())
-            fetchData(valueRange.from, valueRange.to, "reservas", valueGroup,mostrar);
+            fetchData(valueRange.from, valueRange.to);
         }, parseInt(periodo));
 
         return () => clearInterval(intervalId);
     }, [periodo]);
+
+    
 
     const handleSearch = () => {
         if (valueRange == null || valueRange.from == null || valueRange.to == null)
@@ -97,80 +96,17 @@ const GraficaReservas = () => {
         setTitulosGrafica(`Gráfica de ${mostrar}`);
 
         if (msgRange == "" && msgGroup == "") {
-            console.log(valueRange.from + "   " + valueRange.to + "   " + valueGroup+"   "+mostrar);
-            fetchData(valueRange.from, valueRange.to, "reservas", valueGroup,mostrar)
+            console.log(valueRange.from + " 🚀  " + valueRange.to + "   " + valueGroup+"   "+mostrar);
+            fetchData(valueRange.from, valueRange.to)
         }
     }
 
-    const handleClickOrderBy = (key) => {
-        console.log(key);
-        console.log(ordenKeys)
-        var ordenes = ordenKeys;
-        ordenes[key] = !ordenKeys[key];
-        setOrdenKeys(ordenes);
-        const orden = [...tableData].sort((a, b) => {
-
-            if (key == "dateUnformat") {
-                const valorA = new Date(a[key]);
-                const valorB = new Date(b[key]);
-                return ordenKeys[key] ? (valorB - valorA) : (valorA - valorB);
-            } else {
-                const valorA = parseInt(a[key] || 0);
-                const valorB = parseInt(b[key] || 0);
-                return ordenKeys[key] ? (valorB - valorA) : (valorA - valorB);
-            }
-        });
-        setTableData(orden);
-    }
-
-    const valueFormatter = function (number) {  return (unidad=="dinero"?'$ ':"") + new Intl.NumberFormat('us').format(number).toString();};
-
-    const graficas = [
-        <>
-            {
-                chartdata != null ?
-                    <>
-                    <h3 className="font-semibold text-lg ml-16"> {titulosGrafica}  </h3>
-                    <AreaChart
-                        className="h-3/6 mt-6 "
-                        data={chartdata}
-                        index="date"
-                        colors={colores}
-                        categories={chartCategorias}
-                        valueFormatter={valueFormatter} 
-                        yAxisWidth={60}
-                        onValueChange={(v) => console.log(v)}
-                        showLegend={false}
-                        showYAxis={true}
-                        showGridLines={true}
-                        maxValue={maximo}
-                    />                    
-                    </>: <div></div>
-            }
-        </>,
-        <>
-            {
-                chartdata != null ?
-                <>
-                    <h3 className="font-semibold text-lg ml-16">{titulosGrafica}</h3>
-                    <BarChart className="h-3/6 mt-6" 
-                        data={chartdata}
-                        index="date"
-                        categories={chartCategorias}
-                        colors={colores}
-                        yAxisWidth={60}
-                        valueFormatter={valueFormatter} 
-                        showLegend={false}
-                        showGridLines={true}
-                        maxValue={maximo}                        
-                    />
-                </>: <div></div>
-            }
-        </>
-    ];
+    
     return (
         <>
+        <p className=" font-semibold text-2xl ml-8 mt-3">Reservas</p>
             <div className='flex flex-wrap gap-x-6 gap-y-3 justify-center items-end mt-3 z-50' >
+            
                 <div className="">
                     <p className="font-semibold text-lg">Seleccionar rango de fechas:</p>
                     <DateRangePicker value={valueRange} placeholder="seleccione Rango" selectPlaceholder="Seleccionar" onValueChange={setValueRange} />
@@ -186,13 +122,7 @@ const GraficaReservas = () => {
                     </Select>
                     <div className='ml-2 text-red-600 font-bold'>{msgGroup}</div>
                 </div>
-                <div className="w-52">
-                    <label className="font-semibold text-lg">Tipo de gráfico:</label>
-                    <Select defaultValue='0' value={grafica} onValueChange={HandleChangeGrafica}>
-                        <SelectItem value="0"><div className='flex '><span class="icon-[akar-icons--statistic-up] mr-3 w-6 h-6"></span>Gráfico lineal</div></SelectItem>
-                        <SelectItem value="1"><div className='flex '><span class="icon-[icon-park--chart-histogram] mr-3 w-6 h-6"></span>Gráfico de barras</div></SelectItem>
-                    </Select>
-                </div>
+                
                 <div className="w-52">
                     <label className="font-semibold text-lg">Periodo de actualización:</label>
                     <Select defaultValue='3600000' value={periodo} onValueChange={HandleChangePeriodo}>
@@ -221,70 +151,14 @@ const GraficaReservas = () => {
                     <Button variant="secondary" icon={RiSearch2Line} onClick={() => handleSearch()}>Buscar</Button>
                 </div>
             </div>
-            <div className='flex justify-center'>
+            <div className='flex justify-center mt-10'>
                 {
-                    totales&&<div className="flex items-center justify-center flex-col">
-                    <DonutChart 
-                        data={totales} 
-                        category="total"
-                        index="nombre" 
-                        valueFormatter={valueFormatter} 
-                        colors={colores} 
-                        className="w-28" />        
-                    <Legend categories={chartCategorias} 
-                        colors={colores} 
-                        className="flex flex-col" />      
-                </div>
+                    chartdata&&<BarChartReservas listPerson={chartCategorias} datos={chartdata} unidad={unidad} />
+                    
                 }
             </div>
-            {
-                graficas[parseInt(grafica)]
-            }
-            <div className='mt-5 ml-10'>
-                {
-                    chartdata != null
-                        ? <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableHeaderCell>
-                                        <div className='flex gap-2 cursor-pointer' onClick={() => handleClickOrderBy("dateUnformat")}>
-                                            <RiArrowUpDownLine ></RiArrowUpDownLine>FECHA
-                                        </div>
-                                    </TableHeaderCell>
-                                    {
-                                        chartCategorias.map((item) => {
-                                            return <TableHeaderCell>
-                                                <div className='flex gap-2 cursor-pointer' onClick={() => handleClickOrderBy(item)}>
-                                                    <RiArrowUpDownLine ></RiArrowUpDownLine>
-                                                    {item}
-                                                </div>
-                                            </TableHeaderCell>
-                                        })
-                                    }
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {
-                                    tableData.map((item, index) => {
-                                        return <TableRow>
-                                            {
-                                                <>
-                                                    <TableCell className='text-lg text-gray-800'>{item.date}</TableCell>
-                                                    {
-                                                        chartCategorias.map((key) => {
-                                                            return <TableCell className='text-lg text-gray-800'>{(item[key] || 0)}</TableCell>
-                                                        })
-                                                    }
-                                                </>
-                                            }
-                                        </TableRow>
-                                    })
-                                }
-                            </TableBody>
-                        </Table>
-                        : <></>
-                }
-            </div>
+     
+           
         </>
     );
 };

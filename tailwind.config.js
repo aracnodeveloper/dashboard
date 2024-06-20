@@ -14,7 +14,34 @@ export default {
     transparent: 'transparent',
     current: 'currentColor',
     extend: {
+      width: {
+        '1/20': '4%',
+        '2/20': '10%',
+        '3/20': '15%',
+        '4/20': '20%',
+        '5/20': '25%',
+        '6/20': '30%',
+        '7/20': '35%',
+        '8/20': '40%',
+        '9/20': '45%',
+        '10/20': '50%',
+        '11/20': '55%',
+        '12/20': '60%',
+        '13/20': '65%',
+        '14/20': '70%',
+        '15/20': '75%',
+        '16/20': '80%',
+        '17/20': '85%',
+        '18/20': '90%',
+        '19/20': '95%',
+        '20/20': '100%',
+      },
       colors: {
+        customRed: '#ff0000',
+        customGreen: '#00ff00',
+        customBlue: '#0000ff',
+        customYellow:'#888888',
+        custom:'#555555',
         // light mode
         tremor: {
           brand: {
@@ -132,6 +159,8 @@ export default {
       pattern:
         /^(fill-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|100|200|300|400|500|600|700|800|900|950))$/,
     },
+   
   ],
+  
   plugins: [require('@headlessui/tailwindcss'), require('@tailwindcss/forms'),addDynamicIconSelectors()],
 }

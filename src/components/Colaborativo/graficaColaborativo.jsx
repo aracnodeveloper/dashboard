@@ -4,14 +4,16 @@ import { AreaChart, BarChart } from '@tremor/react';
 import { Select, SelectItem } from '@tremor/react';
 import { Button} from '@tremor/react';
 import { DateRangePicker, DonutChart, Legend } from '@tremor/react'
-import { repCuentasGratisController } from '../../Controllers/repCuentasGratisController';
-import ContadorRedes from './ContadorRedes';
+import { repCuentasConCodPromoController } from '../../Controllers/repCuentasConCodPromoController';
 
-
-const GraficaCuentasGratis = () => {
+const GraficaColaborativo = () => {
     const [chartdata, setChardata] = useState()
     const [chartCategorias, setCharCategorias] = useState();
-    const colores= ['gray', 'blue', 'rose','lime'];   
+    const colores= ['gray', 'blue', 'rose','lime','yellow','orange','emerald','sky','indigo','pink','red','amber','stone','green','zinc','fuchsia','violet','teal','slate',
+                    'gray', 'blue', 'rose','lime','yellow','orange','emerald','sky','indigo','pink','red','amber','stone','green','zinc','fuchsia','violet','teal','slate',
+                    'gray', 'blue', 'rose','lime','yellow','orange','emerald','sky','indigo','pink','red','amber','stone','green','zinc','fuchsia','violet','teal','slate',
+                    ];   
+
     const [valueGroup, setValueGroup] = useState("d");
     const [valueRange, setValueRange] = useState({
         from: new Date((new Date).getTime() - (7 * 24 * 60 * 60 * 1000)),
@@ -25,80 +27,7 @@ const GraficaCuentasGratis = () => {
     const [totales, setTotales] = useState();
     const [totalesAnt, setTotalesAnt] = useState();
     const [maximo, setMaximo]=useState(0);
-
-    const HandleChangeGrafica = (event) => {
-        setGrafica(event)
-    }
-
-    const HandleChangePeriodo = (event) => {
-        setPeriodo(event);
-    }
-
-    const handleSearch = () => {
-        if (valueRange == null || valueRange.from == null || valueRange.to == null)
-            setMsgRange("Ingrese un rango de fechas");
-        else
-            setMsgRange("");     
-
-        if (msgRange == "") {
-            //console.log(valueRange.from + " --------  " + valueRange.to);
-            fetchData(valueRange.from, valueRange.to,valueGroup)
-        }
-    }
-    const fetchData = (inicio, fin, grupo) => {
-        repCuentasGratisController(inicio, fin, grupo).then((result) => {
-            if (result) {
-                console.log(result.datos)
-                setChardata(result.datos);
-                //setTableData(result.datos);
-                setCharCategorias(result.categorias);
-                setTotales(result.totales);
-               // console.log("----*");
-                //console.log(result.totales)
-                var estados = {};
-                estados["dateUnformat"] = false;
-                result.categorias.map((item) => {
-                    estados[item] = false;
-                })
-               // setOrdenKeys(estados)
-                setMaximo(result.maximo);
-                //console.log("M{aximo: "+result.maximo)
-            }
-        })
-        const dias=fin.getTime()-inicio.getTime();
-        const diferencia= Math.floor(dias/(1000*60*60*24));      
-        //console.log("diferencia"+diferencia);
-        
-        const inicioAnt=new Date(inicio);
-        inicioAnt.setDate(inicioAnt.getDate()-diferencia);
-
-        //console.log("inicio "+inicioAnt);
-
-        const finAnt=new Date(inicio);
-        finAnt.setDate(finAnt.getDate()-1);
-        //console.log("fin "+finAnt);
-
-        repCuentasGratisController(inicioAnt, finAnt, grupo).then((result) => {
-            if (result) {
-                setTotalesAnt(result.totales);
-            }
-        })
-    }
-
-    useEffect(() => {
-        if (primerEjecucion) {
-            console.log("primera vez cuentasGratis" + (new Date()).toString())           
-            fetchData(valueRange.from, valueRange.to,valueGroup);
-            setPrimerEjecucion(false); // Marca la primera ejecución como completada
-        }
-
-        const intervalId = setInterval(() => {
-            console.log("programado cuentasGratis" + (new Date()).toString())
-            fetchData(valueRange.from, valueRange.to, valueGroup);
-        }, parseInt(periodo));
-
-        return () => clearInterval(intervalId);
-    }, [periodo]);
+    const [tipoCuenta ,setTipoCuenta]=useState("gratis");
 
     const customTooltip = (props) => {
         const { payload, active,label } = props;
@@ -115,7 +44,7 @@ const GraficaCuentasGratis = () => {
                 <label className='font-semibold'>Suma: {total}</label>
             </div>
            
-            <div className='flex flex-col gap-x-8 gap-y-2 mt-2 justify-center max-h-[500px] overflow-hidden'>
+            <div className='flex flex-wrap max-w-[450px] gap-x-8 gap-y-2 mt-2 justify-center max-h-[500px] overflow-hidden'>
                 {payload.map((category, idx) => (
                     category.value!=0?
                 <div key={idx} className="w-48 flex  justify-between items-center gap-3">
@@ -124,7 +53,7 @@ const GraficaCuentasGratis = () => {
                             <div className={`flex w-1 flex-col bg-${category.color}-500 rounded-full w-2.5 h-2.5`}/>
                         </div>
                     </div>
-                    <label className='text-xs text-start w-8/12 font-normal text-gray-500'>{category.dataKey}</label>
+                    <label className='text-sm text-start w-8/12 font-normal text-gray-500'>{category.dataKey}</label>
                     <label className='w-3/12 text-end font-normal' >{category.value}</label>
                 </div>
                 :<></>
@@ -135,6 +64,65 @@ const GraficaCuentasGratis = () => {
         );
       };
 
+    const HandleChangeGrafica = (event) => {
+        setGrafica(event)
+    }
+
+    const HandleChangePeriodo = (event) => {
+        setPeriodo(event);
+    }
+
+    const HandleChangeCuentas = (event) => {
+        setTipoCuenta(event);
+    }
+    const handleSearch = () => {
+        if (valueRange == null || valueRange.from == null || valueRange.to == null)
+            setMsgRange("Ingrese un rango de fechas");
+        else
+            setMsgRange("");     
+
+        if (msgRange == "") {
+            //console.log(valueRange.from + " --------  " + valueRange.to);
+            fetchData(valueRange.from, valueRange.to)
+        }
+    }
+    const fetchData = (inicio, fin) => {
+        repCuentasConCodPromoController(inicio, fin, valueGroup,tipoCuenta).then((result) => {        
+            if (result) {
+                console.log(result.datos)
+                setChardata(result.datos);
+                //setTableData(result.datos);
+                setCharCategorias(result.categorias);
+                setTotales(result.totales);
+                console.log("Totales: ");
+                console.log(result.totales)
+                var estados = {};
+                estados["dateUnformat"] = false;
+                result.categorias.map((item) => {
+                    estados[item] = false;
+                })
+               // setOrdenKeys(estados)
+                setMaximo(result.maximo);
+                //console.log("M{aximo: "+result.maximo)
+            }
+        })       
+    }
+
+    useEffect(() => {
+        if (primerEjecucion) {
+            console.log("primera vez Colaborativo" + (new Date()).toString())           
+            fetchData(valueRange.from, valueRange.to,valueGroup);
+            setPrimerEjecucion(false); // Marca la primera ejecución como completada
+        }
+
+        const intervalId = setInterval(() => {
+            console.log("programado Colaborativo" + (new Date()).toString())
+            fetchData(valueRange.from, valueRange.to, valueGroup);
+        }, parseInt(periodo));
+
+        return () => clearInterval(intervalId);
+    }, [periodo]);
+
     const graficas = [
         <>
             {
@@ -144,26 +132,25 @@ const GraficaCuentasGratis = () => {
                         className="h-3/6 mt-6 "
                         data={chartdata}
                         index="date"
-                        colors={colores}
+                       colors={colores}
                         categories={chartCategorias}
                         //valueFormatter={valueFormatter} 
                         yAxisWidth={60}
                         onValueChange={(v) => console.log(v)}
                         showLegend={false}
                         showYAxis={true}
+                        customTooltip={customTooltip}
                         showGridLines={true}
-                        maxValue={maximo}
-                        customTooltip={customTooltip}    
+                        maxValue={maximo}                        
                     />                    
-                    </>: <div></div>
+                    </>: <div></div>                    
             }
         </>,
         <>
-            {
+            {                
                 chartdata != null ?
-                <>
-                   
-                    <BarChart className="h-3/6 mt-6" 
+                <>                   
+                    <BarChart className="h-3/6 mt-6 z-0" 
                         data={chartdata}
                         index="date"
                         categories={chartCategorias}
@@ -172,17 +159,21 @@ const GraficaCuentasGratis = () => {
                         //valueFormatter={valueFormatter} 
                         showLegend={false}
                         showGridLines={true}
+                        maxValue={maximo} 
                         stack={true}  
-                        maxValue={maximo}                           
-                        customTooltip={customTooltip}                     
+                        customTooltip={customTooltip}
                     />
-                </>: <div></div>
+                </>: <div></div>                
             }
         </>
     ];
+
+    
+
+
     return (
         <>
-        <p className=" font-semibold text-2xl ml-8 mt-3">Descargas</p>
+            <p className=" font-semibold text-2xl ml-8 mt-3">Colaborativos</p>
             <div className='flex flex-wrap gap-x-6 gap-y-3 justify-center items-end mt-3 z-50' >
                 <div className="">
                     <p className="font-semibold text-lg">Seleccionar rango de fechas:</p>
@@ -212,6 +203,13 @@ const GraficaCuentasGratis = () => {
                         <SelectItem value="1800000"><div className='flex '><span class="icon-[octicon--stopwatch-16] mr-3 w-6 h-6"></span>30 minutos</div></SelectItem>
                         <SelectItem value="3600000"><div className='flex '><span class="icon-[octicon--stopwatch-16] mr-3 w-6 h-6"></span>1 hora</div></SelectItem>
                     </Select>
+                </div>   
+                <div className="w-52">
+                    <label className="font-semibold text-lg">Tipo de cuenta:</label>
+                    <Select defaultValue='gratis' value={tipoCuenta} onValueChange={HandleChangeCuentas}>
+                        <SelectItem value="gratis"><div className='flex '><span class="icon-[octicon--stopwatch-16] mr-3 w-6 h-6"></span>Pruebas Gratis</div></SelectItem>
+                        <SelectItem value="suscripcion"><div className='flex '><span class="icon-[octicon--stopwatch-16] mr-3 w-6 h-6"></span>Suscripciones</div></SelectItem>
+                    </Select>
                 </div>                
                 <div className="">
                     <Button variant="secondary" icon={RiSearch2Line} onClick={() => handleSearch()}>Buscar</Button>
@@ -219,58 +217,28 @@ const GraficaCuentasGratis = () => {
             </div>
             <div className='flex justify-center mt-4' >
                 {
-                    (totales&&totalesAnt)&&<div className="flex flex-wrap items-center justify-center gap-3">
-                        <ContadorRedes 
-                            titulo={"Apple"} 
-                            valActual={totales.find(item=>item.nombre=="apple").total} 
-                            valAnterior={totalesAnt.find(item=>item.nombre=="apple").total} 
-                            icono={"icon-[simple-icons--apple]"} 
-                        />
-                        <ContadorRedes 
-                            titulo={"Facebook"} 
-                            valActual={totales.find(item=>item.nombre=="facebook").total} 
-                            valAnterior={totalesAnt.find(item=>item.nombre=="facebook").total}  
-                            icono={"icon-[logos--facebook]"} 
-                        />
-                        <ContadorRedes 
-                            titulo={"Google"} 
-                            valActual={totales.find(item=>item.nombre=="google").total} 
-                            valAnterior={totalesAnt.find(item=>item.nombre=="google").total}  
-                            icono={"icon-[logos--google-icon]"} 
-                        />
-                        <ContadorRedes 
-                            titulo={"Registro"} 
-                            valActual={totales.find(item=>item.nombre=="registro").total} 
-                            valAnterior={totalesAnt.find(item=>item.nombre=="registro").total}  
-                            icono={"icon-[ph--user-circle-plus-fill]"} 
-                        /> 
-                        <div className='flex flex-col rounded-xl shadow-xl w-60 items-center gap-5 h-36'>
-                            <div className='flex items-center '>
-                                <h1 className='mt-2 ml-4 text-xl font-semibold text-center'>Estadisticas de descargas</h1>                                
-                            </div>
-                            <div className='flex gap-4 pl-4'>
-                                <span class='icon-[simple-icons--apple] w-10 h-10 cursor-pointer' onClick={()=>{window.open("https://appstoreconnect.apple.com/analytics/app/d30/1385161516/overview?iaemeasure=totalDownloads")}}></span>
-                                <span class='icon-[devicon--android] w-11 h-11 cursor-pointer' onClick={()=>{window.open("https://play.google.com/console/u/0/developers/6092364133521490906/app/4973313953304959541/app-dashboard?timespan=thirtyDays")}}></span>
-                            </div>
-                        </div>
-                        <div className='flex rounded-xl shadow-xl w-60 items-center justify-center h-36'>
+                    (totales)&&<div className="flex flex-wrap items-center justify-center gap-3">
+                        <div className='flex flex-col items-center justify-center '>
                             <DonutChart 
                                 data={totales} 
                                 category="total"
                                 index="nombre" 
                                 //valueFormatter={valueFormatter} 
                                 colors={colores} 
-                                className="w-28 z-50"
+                                className="w-28"
                             /> 
 
-                            <Legend categories={chartCategorias} 
+                            <Legend categories={chartCategorias.map((item)=>(
+                                <div className='w-52 flex'>
+                                    <label className="whitespace-normal">{item}</label>
+                              </div>  
+                            ))} 
                                 colors={colores} 
-                                className="max-w-20 py-7 ml-4 z-0"    
+                                className="z-0  max-w-[1500px] ml-7"     
                             />  
                                    
-                        </div>                      
-                </div>
-                
+                        </div>                     
+                </div>                
                 }
             </div>
             {
@@ -280,4 +248,4 @@ const GraficaCuentasGratis = () => {
     );
 };
 
-export default GraficaCuentasGratis;
+export default GraficaColaborativo;

@@ -6,8 +6,9 @@ const Navbar = ({ changeMenu, activo }) => {
     const Menus = [
         { title: "Reservas", src: "icon-[emojione-monotone--bellhop-bell]" },
         { title: "Descargas", src: "icon-[line-md--downloading-loop]" },
-      //  { title: "apple", src: "icon-[simple-icons--apple]" },
-      //  { title: "Android", src: "icon-[bi--android2]" },
+        { title: "Colaborativo", src: "icon-[ph--users-three-duotone]" },
+        { title: "Suscripciones", src:"icon-[fluent--contact-card-ribbon-16-regular]"},
+        { title: "Cashback",src:"icon-[material-symbols--currency-exchange]"}
     ];
 
     return (
@@ -23,7 +24,8 @@ const Navbar = ({ changeMenu, activo }) => {
                             <li
                                 key={index}
                                 onClick={() => changeMenu(index)}
-                                className={`flex  rounded-md p-2 cursor-pointer hover:bg-light-white text-black text-sm items-center gap-x-4  ${Menu.gap ? "mt-9" : "mt-2"} ${index === 0 && "bg-light-white"} ${index==activo?"bg-gray-300":""} mr-4`}>
+                                className={`flex relative group  rounded-md p-2 cursor-pointer hover:bg-light-white text-black text-sm items-center gap-x-4  mt-2 ${index === 0 && "bg-light-white"} ${index==activo?"bg-gray-300":""} mr-4`}>
+                                {(!open)&&<div className='absolute hidden group-hover:block  ml-12 rounded-md bg-green-900 p-2 text-white font-semibold'>{Menu.title}</div>}
                                 <span class={`${Menu.src} h-7 w-7 text-green-900`}></span>
                                 <span className={`${!open && "hidden"} origin-left duration-200`}>
                                     {Menu.title}

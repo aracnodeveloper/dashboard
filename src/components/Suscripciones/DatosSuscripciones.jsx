@@ -81,10 +81,10 @@ const DatosSuscripciones = () => {
 
             <div className="flex flex-wrap gap-4 mb-6 ml-4">
                 <DescargarSuscripciones
-                dateRange={dateRange}
-                filterStatus={filterStatus}
-                data={filteredData}
-            />
+                    dateRange={dateRange}
+                    filterStatus={filterStatus}
+                    data={filteredData}
+                />
                 <div className="flex flex-col gap-2">
 
                     <span className="font-medium">Fecha desde</span>

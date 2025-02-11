@@ -57,7 +57,7 @@ const TablaSuscripciones = ({ data }) => {
                             {columns.map(column => (
                                 <TableCell key={column.key}>
                                     {column.key === 'fechaSuscripcion' ? (
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 text-blue-600">
                                             <Badge color={status.color} size="sm">
                                                 {status.icon}
                                             </Badge>

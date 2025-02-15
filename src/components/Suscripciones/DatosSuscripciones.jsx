@@ -1,179 +1,151 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from 'react';
-import { Button, Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow,Badge } from '@tremor/react';
-import { Select, SelectItem ,DatePicker,DateRangePicker, DonutChart, Legend } from '@tremor/react'
-import { RiSearch2Line, RiArrowUpDownLine,RiFlag2Line  } from '@remixicon/react';
+import {
+    Button,
+    Select,
+    SelectItem,
+    DatePicker
+} from '@tremor/react';
+import { RiSearch2Line, RiAlertLine, RiCheckLine, RiInformationLine } from '@remixicon/react';
+import { parseISO, isBefore } from 'date-fns';
 import { repSuscripcionesController } from '../../Controllers/repSuscripcionesController';
-import { format, parseISO, isBefore, isAfter, addDays } from 'date-fns';
+import TablaSuscripciones from './TablaSucriptores.jsx';
+import DescargarSuscripciones from "./Suscripciones_report.jsx";
 
 const DatosSuscripciones = () => {
     const [loading, setLoading] = useState(false);
-    const [data, setData] = useState(); 
-    const [tableData, setTableData] = useState()
-    const [msgRange, setMsgRange] = useState("");
-    const [mostrar,setMostrar]=useState("todas");
-    const [valueFrom, setValueFrom] = useState(new Date(Date.now() -(30 * 24 * 60 * 60 * 1000)));
-    const [valueTo, setValueTo] = useState(new Date(Date.now() + 10 * 24 * 60 * 60 * 1000));
+    const [data, setData] = useState([]);
+    const [filteredData, setFilteredData] = useState([]);
+    const [dateRange, setDateRange] = useState({
+        from: new Date(Date.now() - (30 * 24 * 60 * 60 * 1000)),
+        to: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000)
+    });
+    const [filterStatus, setFilterStatus] = useState('todas');
+    const [error, setError] = useState('');
+
+    const fetchData = async () => {
+        if (!dateRange.from || !dateRange.to) {
+            setError('Por favor seleccione ambas fechas');
+            return;
+        }
+        setError('');
+        setLoading(true);
+
+        try {
+            const result = await repSuscripcionesController(dateRange.from, dateRange.to);
+            if (result?.datos) {
+                setData(result.datos);
+                filterData(result.datos, filterStatus);
+            } else {
+                setError('No se encontraron datos');
+            }
+        } catch (err) {
+            setError('Error al obtener datos');
+            console.error('Error fetching data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const filterData = (dataToFilter, status) => {
+        if (!dataToFilter) return;
+
+        if (status === 'todas') {
+            setFilteredData(dataToFilter);
+            return;
+        }
+
+        const filtered = dataToFilter.filter(item => {
+            const isActive = !isBefore(parseISO(item.fechaSuscripcion.split(" - ")[1]), new Date());
+            return status === 'activas' ? isActive : !isActive;
+        });
+        setFilteredData(filtered);
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
 
     const handleSearch = () => {
-        if (valueFrom == null || valueTo == null)
-            setMsgRange("* Ingrese fechas");
-        else
-            setMsgRange("");
-      
-        if (msgRange == "") {
-            console.log(valueFrom + "   " + valueTo );
-            fetchData();
-        }
-    }
-    const HandleChangeMostrar = (event) => {
-        setMostrar(event);
-        if(event=="todas"){
-            setTableData([...data]);
-        }
-        if(event=="activas"){
-            const activas = [...data].filter((item) => estadoSuscripcion(item.fechaSuscripcion));
-            setTableData(activas);
-        }
-        if(event=="inactivas"){
-            const activas = [...data].filter((item) => !estadoSuscripcion(item.fechaSuscripcion));
-            setTableData(activas);
-        }
-    }
-    const fetchData = () => {
-        setLoading(true)
-        repSuscripcionesController(valueFrom,valueTo,mostrar).then((result) => {
-            if (result) {
-                console.log(result.datos)               
-                setTableData(result.datos);        
-                setData(result.datos);
-                setLoading(false)
-            }else{
-                setLoading(false)
-            }
-        })
-    }
+        fetchData();
+    };
 
-    useEffect(() => {       
-        console.log("primera vez reservas" + (new Date()).toString())
-        //console.log("most: "+mostrar);
-        fetchData();     
-    },[]);
-
-    const estadoSuscripcion=(rangoFechas)=>{
-        const fechas = rangoFechas.split(" - "); // Divide la cadena en un array de fechas
-        const ultimaFecha = fechas[fechas.length - 1];
-        
-        const fechaActual = new Date();
-        const fechaParsed = parseISO(ultimaFecha);
-        const fechaSieteDias = addDays(fechaActual, 7);
-        if (isBefore(fechaParsed, fechaActual)) 
-            return false;
-        else
-            return true;
-
-    }
-
-    const FechaComponent = ({ rangoFechas }) => {
-        const fechas = rangoFechas.split(" - "); // Divide la cadena en un array de fechas
-        const ultimaFecha = fechas[fechas.length - 1];
-        
-        const fechaActual = new Date();
-        const fechaParsed = parseISO(ultimaFecha);
-        const fechaSieteDias = addDays(fechaActual, 7);
-      
-        let estilo = "", texto="", icono="";
-      
-        if (isBefore(fechaParsed, fechaActual)) {
-          estilo = 'red-500';
-          icono = <span class="icon-[codicon--error] "></span>
-        } else if (isAfter(fechaParsed, fechaActual) && isBefore(fechaParsed, fechaSieteDias)) {
-          estilo = 'amber-500';
-          icono = <span class="icon-[zmdi--alert-circle-o]"></span>
-          texto="";
-        } else if (isAfter(fechaParsed, fechaSieteDias)) {
-          estilo = 'green-500';
-          icono = <span class="icon-[mdi--check-circle-outline] h-[16px] w-[16px]"></span>
-        }
-      
-        return (
-          <div className={estilo +' flex gap-2 items-center'} >
-            <Badge className='ml-2 pt-1' color={estilo}>{icono}</Badge>
-           {rangoFechas}           
-          </div>
-        );
-      };
+    const handleStatusChange = (value) => {
+        setFilterStatus(value);
+        filterData(data, value);
+    };
 
     return (
-        <>
-        <p className=" font-semibold text-2xl ml-8 mt-3">Suscripciones</p>
-        <div className='flex flex-wrap gap-x-6 gap-y-3 justify-center items-end mt-3 z-50' >
-            
-            <div className="">
-                <p className="font-semibold text-lg">fecha desde:</p>
-                <DatePicker className="mx-auto max-w-sm" value={valueFrom} onValueChange={setValueFrom}  placeholder="seleccione Fecha" selectPlaceholder="Seleccionar"/>                
-            </div>  
-            <div className="">
-                <p className="font-semibold text-lg">fecha hasta:</p>
-                <DatePicker className="mx-auto max-w-sm" value={valueTo} onValueChange={setValueTo} placeholder="seleccione Fecha" selectPlaceholder="Seleccionar"/>                
+        <div className="p-6 ml-4">
+            <h2 className="text-2xl font-semibold mb-6 ml-4">Suscripciones</h2>
+
+            <div className="flex flex-wrap gap-4 mb-6 ml-4">
+                <DescargarSuscripciones
+                    dateRange={dateRange}
+                    filterStatus={filterStatus}
+                    data={filteredData}
+                />
+                <div className="flex flex-col gap-2">
+
+                    <span className="font-medium">Fecha desde</span>
+                    <DatePicker
+                        value={dateRange.from}
+                        onValueChange={(date) => setDateRange(prev => ({ ...prev, from: date }))}
+                        placeholder="Seleccione fecha"
+                    />
+                </div>
+                <div className="flex flex-col gap-2">
+                    <span className="font-medium">Fecha hasta</span>
+                    <DatePicker
+                        value={dateRange.to}
+                        onValueChange={(date) => setDateRange(prev => ({ ...prev, to: date }))}
+                        placeholder="Seleccione fecha"
+                    />
+                </div>
+                <div className="flex flex-col gap-2">
+                    <span className="font-medium">Estado</span>
+                    <Select
+                        value={filterStatus}
+                        onValueChange={handleStatusChange}
+                        defaultValue="todas"
+                    >
+                        <SelectItem value="todas">
+                            <div className="flex items-center gap-2">
+                                <RiInformationLine className="h-4 w-4" />
+                                Todas
+                            </div>
+                        </SelectItem>
+                        <SelectItem value="activas">
+                            <div className="flex items-center gap-2">
+                                <RiCheckLine className="h-4 w-4" />
+                                Activas
+                            </div>
+                        </SelectItem>
+                        <SelectItem value="inactivas">
+                            <div className="flex items-center gap-2">
+                                <RiAlertLine className="h-4 w-4" />
+                                Inactivas
+                            </div>
+                        </SelectItem>
+                    </Select>
+                </div>
+                <Button
+                    variant="secondary"
+                    icon={RiSearch2Line}
+                    onClick={handleSearch}
+                    disabled={loading}
+                    className="self-end"
+                >
+                    {loading ? 'Cargando...' : 'Buscar'}
+                </Button>
             </div>
-            
-            <div>
-                <label className="font-semibold text-lg">Estado de suscripción:</label>
-                <Select defaultValue='todas' value={mostrar} onValueChange={HandleChangeMostrar}>
-                    <SelectItem value="activas" ><div className='flex '><span class="icon-[mdi--check-circle-outline] mr-3 h-6 w-6"></span>Activas</div></SelectItem>
-                    <SelectItem value="inactivas"><div className='flex '><span class="icon-[codicon--error] mr-3 h-6 w-6"></span>Inactivas</div></SelectItem>                  
-                    <SelectItem value="todas"><div className='flex '><span class="icon-[mdi--checkbox-marked-circle-minus-outline] mr-3 h-6 w-6"></span>Todas</div></SelectItem>                  
-                </Select>
-            </div>
-            
-            <div className="">
-                <Button variant="secondary" icon={RiSearch2Line} onClick={() =>loading?{}: handleSearch()}>{loading?<span class="icon-[line-md--loading-twotone-loop] w-10 h-4"></span>:"Buscar"}</Button>
-                
-            </div>
-            <div className='ml-2 text-red-600 '>{msgRange}</div>
+
+            {error && (
+                <div className="text-red-500 mb-4">{error}</div>
+            )}
+
+            <TablaSuscripciones data={filteredData} />
         </div>
-        <div className='mt-5 ml-8'>
-        <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-semibold">Listado suscripciones y caducidad</h3>
-            <Table>      
-                <TableHead>        
-                    <TableRow>          
-                        <TableHeaderCell>IdSus</TableHeaderCell>          
-                        <TableHeaderCell>Ci / RUC</TableHeaderCell>   
-                        <TableHeaderCell>Cliente</TableHeaderCell>        
-                        <TableHeaderCell>Producto Suscripción</TableHeaderCell>          
-                        {//<TableHeaderCell className=''>Lugar</TableHeaderCell>  
-                        } 
-                        <TableHeaderCell>Fecha Suscripción</TableHeaderCell>  
-                        <TableHeaderCell>Vendedor</TableHeaderCell>     
-                        <TableHeaderCell>Contactos</TableHeaderCell> 
-                        <TableHeaderCell className="w-1/20">#Reservas</TableHeaderCell> 
-                        <TableHeaderCell>Última-Reserva</TableHeaderCell> 
-                    </TableRow>      
-                </TableHead>
-                <TableBody>
-            {                
-                tableData&&tableData.map((item)=>(
-                    <>                   
-                    <TableRow className='text-xs'>          
-                        <TableCell>{item.IdSuscripcion}</TableCell>          
-                        <TableCell>{item.ci_ruc}</TableCell>          
-                        <TableCell className='font-semibold text-blue-600'>{item.cliente}</TableCell>          
-                        <TableCell>{item.prod_suscripcion}</TableCell> 
-                        {//<TableCell className='text-xs'>{item.lugar}</TableCell>  
-                        }  
-                        <TableCell className='font-semibold text-blue-700'><FechaComponent rangoFechas={item.fechaSuscripcion}/></TableCell>                         
-                        <TableCell className=''>{item.vendedor}</TableCell> 
-                        <TableCell>{item.contactos}</TableCell> 
-                        <TableCell className='text-center font-semibold'  >{item.cantReservas}</TableCell> 
-                        <TableCell>{item.ultimaReservaConfirmada}</TableCell>
-                    </TableRow>
-                    </>
-                ))
-            }
-                </TableBody>
-            </Table>
-        </div>
-        </>     
     );
 };
 

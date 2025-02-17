@@ -1,4 +1,6 @@
+// eslint-disable-next-line no-unused-vars
 import React from 'react';
+// eslint-disable-next-line no-unused-vars
 import { useEffect, useState } from "react";
 import Navbar from '../../components/global_components/nabvar/Navbar';
 import Reservas from '../reservas/Reservas';
@@ -6,6 +8,7 @@ import CuentasGratis from '../cuentasGratis/CuentasGratis';
 import Colaborativo from '../Colaborativo/Colaborativo';
 import Suscripciones from '../Suscripciones/Suscripciones';
 import Cashback from '../Cashback/Cashback';
+
 
 
 /*const Reservas = lazy(() => import('../reservas/Reservas'));
@@ -29,7 +32,7 @@ const Home = () => {
     
     return (
         <div className='flex'>
-            <Navbar changeMenu={setMenuOption} activo={menuOption}></Navbar>
+            <Navbar changeMenu={setMenuOption} activo={menuOption} ></Navbar>
             {/*<Suspense> {menus[menuOption]}</Suspense>*/}
             {menus[menuOption]}
         </div>

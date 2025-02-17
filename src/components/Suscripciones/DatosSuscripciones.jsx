@@ -76,7 +76,7 @@ const DatosSuscripciones = () => {
     };
 
     return (
-        <div className="p-6 ml-4">
+        <div className="p-6 ml-4 pl-20">
             <h2 className="text-2xl font-semibold mb-6 ml-4">Suscripciones</h2>
 
             <div className="flex flex-wrap gap-4 mb-6 ml-4">

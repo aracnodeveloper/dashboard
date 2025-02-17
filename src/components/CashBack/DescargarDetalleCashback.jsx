@@ -5,10 +5,11 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
 
-const DescargarCashbackDetalle = ({ data, usuario, totalComision }) => {
+const DescargarCashbackDetalle = ({ data, usuario, totalComision, disabled = false }) => {
     const [loading, setLoading] = useState(false);
 
     const generarExcel = async () => {
+        if (disabled || data.length === 0) return;
         setLoading(true);
         try {
             const workbook = new ExcelJS.Workbook();
@@ -56,7 +57,7 @@ const DescargarCashbackDetalle = ({ data, usuario, totalComision }) => {
                 rows: rows
             });
 
-            worksheet.getCell('A1').font = { bold: true, size: 14 };
+            worksheet.getCell('A1').font = { bold: true, size: 10 };
             worksheet.getCell('A2').font = { bold: true };
             worksheet.getCell('A3').font = { italic: true };
 
@@ -90,10 +91,15 @@ const DescargarCashbackDetalle = ({ data, usuario, totalComision }) => {
 
     return (
         <button
-            onClick={loading ? null : generarExcel}
-            disabled={loading}
-            className="inline-flex items-center justify-center gap-3 px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed active:bg-green-800"
-             >
+            onClick={loading || disabled ? null : generarExcel}
+            disabled={loading || disabled}
+            title={disabled ? "Seleccione un usuario y espere a que se cargue la información" : "Descargar reporte en Excel"}
+            className={`inline-flex items-center justify-center gap-3 px-4 py-2.5 text-sm font-semibold transition-colors duration-200 rounded-lg shadow-sm ${
+                disabled
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+                    : 'text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed active:bg-green-800'
+            }`}
+        >
             {loading ? (
                 <>
                     <span className="animate-spin">⌛</span>
@@ -102,7 +108,7 @@ const DescargarCashbackDetalle = ({ data, usuario, totalComision }) => {
             ) : (
                 <>
                     <span>📥</span>
-                    <span>Exportar Excel</span>
+                    <span>Excel</span>
                 </>
             )}
         </button>
@@ -119,7 +125,8 @@ DescargarCashbackDetalle.propTypes = {
         suscripcion: PropTypes.string.isRequired
     })).isRequired,
     usuario: PropTypes.string.isRequired,
-    totalComision: PropTypes.number.isRequired
+    totalComision: PropTypes.number.isRequired,
+    disabled: PropTypes.bool
 };
 
 export default DescargarCashbackDetalle;

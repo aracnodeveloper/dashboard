@@ -104,8 +104,8 @@ const GraficaReservas = () => {
     
     return (
         <>
-        <p className=" font-semibold text-2xl ml-8 mt-3">Reservas</p>
-            <div className='flex flex-wrap gap-x-6 gap-y-3 justify-center items-end mt-3 z-50' >
+        <p className=" font-semibold text-2xl ml-8 mt-3 pl-20">Reservas</p>
+            <div className='flex flex-wrap gap-x-6 gap-y-3 justify-center items-end mt-3 z-50 pl-20' >
             
                 <div className="">
                     <p className="font-semibold text-lg">Seleccionar rango de fechas:</p>

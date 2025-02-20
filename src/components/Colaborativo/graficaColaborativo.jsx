@@ -173,8 +173,8 @@ const GraficaColaborativo = () => {
 
     return (
         <>
-            <p className=" font-semibold text-2xl ml-8 mt-3">Colaborativos</p>
-            <div className='flex flex-wrap gap-x-6 gap-y-3 justify-center items-end mt-3 z-50' >
+            <p className=" font-semibold text-2xl ml-8 mt-3 pl-20">Colaborativos</p>
+            <div className='flex flex-wrap gap-x-6 gap-y-3 justify-center items-end mt-3 z-50 pl-20' >
                 <div className="">
                     <p className="font-semibold text-lg">Seleccionar rango de fechas:</p>
                     <DateRangePicker value={valueRange} placeholder="seleccione Rango" selectPlaceholder="Seleccionar" onValueChange={setValueRange} />
@@ -215,7 +215,7 @@ const GraficaColaborativo = () => {
                     <Button variant="secondary" icon={RiSearch2Line} onClick={() => handleSearch()}>Buscar</Button>
                 </div>
             </div>
-            <div className='flex justify-center mt-4' >
+            <div className='flex justify-center mt-4 pl-20' >
                 {
                     (totales)&&<div className="flex flex-wrap items-center justify-center gap-3">
                         <div className='flex flex-col items-center justify-center '>

@@ -138,6 +138,8 @@ const GraficaReservas = () => {
                         <SelectItem value="fee"><div className='flex '><span class="icon-[tdesign--undertake-transaction] mr-3 h-6 w-6"></span>fee</div></SelectItem>
                         <SelectItem value="canje"><div className='flex '> <span class="icon-[material-symbols--change-circle-outline-rounded] mr-3 h-6 w-6"></span>Canje</div></SelectItem>
                         <SelectItem value="premios"><div className='flex '> <span class="icon-[streamline--shopping-gift-reward-box-social-present-gift-media-rating-bow] mr-3 h-6 w-6"></span>Premios</div></SelectItem>
+                        <SelectItem value="cotizaciones"><div className='flex '> <span class="icon-[streamline--shopping-gift-reward-box-social-present-gift-media-rating-bow] mr-3 h-6 w-6"></span>Cotizaciones</div></SelectItem>
+
                     </Select>
                 </div>
                 <div>
